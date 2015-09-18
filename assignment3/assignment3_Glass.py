@@ -2,7 +2,6 @@
 #University of Colorado at Boulder
 #HW3	Fall 2015
 #Author: Chris Glass
-#python 3
 
 #usage: Assignment3_Glass.py [world file][heuristic]
 
@@ -32,8 +31,8 @@ class node:
 	def set_parent(self,parent):
 		self.parent=parent
 
-	def __lt__(self,other,huer):
-		self.H+self.cost<other.H+other.cost
+	def __lt__(self,other):
+		return (self.H+self.cost)<(other.H+other.cost)
 
 #generates nodes based upon current node location
 def get_node(N,direction):
@@ -69,29 +68,34 @@ def get_node(N,direction):
 def search(Node):
 	N =get_node(Node,'N')
 	if(N):
-		N.set_H(destination)	#set hueristic value relative to destination
+		N.set_H(destination,huer)	#set hueristic value relative to destination
 		N.set_parent(Node)		#set the nodes parent for trace back
-		queue.put(N)			#add node to priority queue
+		queue_put(N)			#add node to priority queue
+		travel_list.append(N)
 	NE=get_node(Node,'NE')
 	if(NE):
-		NE.set_H(destination)
+		NE.set_H(destination,huer)
 		NE.set_parent(Node)
-		queue.put(NE)
+		queue_put(NE)
+		travel_list.append(NE)		
 	E=get_node(Node,'E')
 	if(E):
-		E.set_H(destination)
+		E.set_H(destination,huer)
 		E.set_parent(Node)
-		queue.put(E)
+		queue_put(E)
+		travel_list.append(E)	
 	SE=get_node(Node,'SE')
 	if(SE):
-		SE.set_H(destination)
+		SE.set_H(destination,huer)
 		SE.set_parent(Node)
-		queue.put(cost,SE)
+		queue_put(SE)
+		travel_list.append(SE)	
 	S=get_node(Node,'S')
 	if(S):
-		S.set_H(destination)
+		S.set_H(destination,huer)
 		S.set_parent(Node)
-		queue.put(S)
+		queue_put(S)
+		travel_list.append(S)	
 
 # print path from desitination to start
 def PrintParent(Node):
@@ -99,14 +103,22 @@ def PrintParent(Node):
 		print("X:",Node.x," y:" , Node.y)
 		Node=Node.parent
 
+def queue_put(Node):
+	for N in travel_list:
+		if(N.x==Node.x and N.y==Node.y):
+			return 0
+
+	queue.put(Node);
+
+
 #get commandline args
-if(len(sys.argv)<2):
+if(len(sys.argv)<3):
 	print("not enought arguments ")
 	print("usage: Assignment3_Glass [world file][heuristic]")
-	print ("heuristics: manhattan euclidean")
+	print ("heuristics: manhattan, euclidean")
 	sys.exit()
-world=sys.argv[0]
-heuristic=sys.argv[1]
+world=sys.argv[1]
+heuristic=sys.argv[2]
 
 if(heuristic=="manhattan"):
 	huer=1
@@ -122,12 +134,16 @@ queue=queue.PriorityQueue()
 
 i=0
 row=[]
-with open(world) as F:
-	line=F.readlines()
-	for x in line:
-		row.append(x.split())
+try:
+	with open(world) as F:
+		line=F.readlines()
+		for x in line:
+			row.append(x.split())
+except:
+	print("file could not be opened")
+	sys.exit()
 
-
+travel_list=[]
 Node=start_node
 num_nodes=0
 #main loop to find result
